@@ -1,0 +1,96 @@
+schema: '2.0'
+stages:
+  get-features:
+    cmd: python3 scripts/data_scripts/get_features.py data/raw/train.csv
+    deps:
+    - path: data/raw/train.csv
+      hash: md5
+      md5: cea99877291b3ec40b55dac15f5b3e3b
+      size: 2037893
+    - path: scripts/data_scripts/get_features.py
+      hash: md5
+      md5: 32cd90d050510d5bb4e71936b73d8111
+      size: 819
+    outs:
+    - path: data/stage1
+      hash: md5
+      md5: 6f8f9c121894b60eb87d19ea48a7d03c.dir
+      size: 715980
+      nfiles: 1
+  fill_na:
+    cmd: python3 scripts/data_scripts/fill_na.py data/stage1/train.csv
+    deps:
+    - path: data/stage1/train.csv
+      hash: md5
+      md5: f8f050c5a5e2b7f6b16594ce3c1bb7a2
+      size: 715980
+    - path: scripts/data_scripts/fill_na.py
+      hash: md5
+      md5: 7ed6ee2875e809962fb390f74daed7cf
+      size: 1052
+    outs:
+    - path: data/stage2
+      hash: md5
+      md5: 6f8f9c121894b60eb87d19ea48a7d03c.dir
+      size: 715980
+      nfiles: 1
+  split:
+    cmd: python3 scripts/data_scripts/train_test_split.py data/stage2/train.csv
+    deps:
+    - path: data/stage2/train.csv
+      hash: md5
+      md5: f8f050c5a5e2b7f6b16594ce3c1bb7a2
+      size: 715980
+    - path: scripts/data_scripts/train_test_split.py
+      hash: md5
+      md5: 08cbe72536fa8e20822f5a972482685e
+      size: 979
+    params:
+      params.yaml:
+        split.split_ratio: 0.3
+    outs:
+    - path: data/stage3
+      hash: md5
+      md5: fca6f811b8e989f0b85dd40dd43a5010.dir
+      size: 715958
+      nfiles: 2
+  train:
+    cmd: python3 scripts/model_scripts/dt.py data/stage3/train.csv model.pkl
+    deps:
+    - path: data/stage3/train.csv
+      hash: md5
+      md5: bd10442f7057a82ef0d39a72570e6c5a
+      size: 501152
+    - path: scripts/model_scripts/dt.py
+      hash: md5
+      md5: 22e380a90191f36617957fa51c1b261c
+      size: 757
+    params:
+      params.yaml:
+        train.max_depth: 3
+        train.seed: 42
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: 4cca4aa9ec8a938f13424b18cf84bc18
+      size: 796197
+  evaluate:
+    cmd: python3 scripts/model_scripts/evaluate.py data/stage3/test.csv models/model.pkl
+    deps:
+    - path: data/stage3/test.csv
+      hash: md5
+      md5: 9818724a813fcbe1a50ac5ce47993aab
+      size: 214806
+    - path: models/model.pkl
+      hash: md5
+      md5: 4cca4aa9ec8a938f13424b18cf84bc18
+      size: 796197
+    - path: scripts/model_scripts/evaluate.py
+      hash: md5
+      md5: 6bfef5a9aa4043b2487ecab877d0390c
+      size: 592
+    outs:
+    - path: evaluate/score.json
+      hash: md5
+      md5: 5fe1658d2ab44349a044920dde5a46b4
+      size: 30
